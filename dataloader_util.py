@@ -1,6 +1,23 @@
 import numpy as np
 import re
 import cv2
+import transformations as tfs
+
+def load_poses_tum(posefile):
+    pose_items = np.genfromtxt(posefile)
+    pose_list = []
+    for i, pose in enumerate(pose_items):
+        # np.roll(pose[3:], -1) uncomment this if the quaternion is saved as [w, x, y, z]
+        timestamps = pose[0]
+        pose = pose[1:]
+        quaternion = np.roll(pose[3:], 1)  # tum format is xyzw, need to roll to wxyz
+        position = pose[:3]
+        tf_matrix = tfs.quaternion_matrix(quaternion)
+        tf_matrix[0, 3] = position[0] + 1
+        tf_matrix[1, 3] = position[1]
+        tf_matrix[2, 3] = position[2]
+        pose_list.append(tf_matrix)
+    return pose_list
 
 
 def load_poses(posefile):

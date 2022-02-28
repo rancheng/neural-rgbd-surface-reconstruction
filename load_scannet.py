@@ -35,6 +35,13 @@ def get_intrinsics(basedir, crop):
 
     return H, W, focal
 
+def load_tum_data(basedir, trainskip, downsample_factor=1, translation=0.0, sc_factor=1., crop=0):
+
+    # Get image filenames, poses and intrinsics
+    img_files = [f for f in sorted(os.listdir(os.path.join(basedir, 'rgb')), key=alphanum_key) if f.endswith('png')]
+    depth_files = [f for f in sorted(os.listdir(os.path.join(basedir, 'depth')), key=alphanum_key) if f.endswith('png')]
+    all_poses, valid_poses = load_poses_tum(os.path.join(basedir, 'kf_pose_result_tum_interp.txt'))
+
 
 def load_scannet_data(basedir, trainskip, downsample_factor=1, translation=0.0, sc_factor=1., crop=0):
 

@@ -1,7 +1,7 @@
-expname = breakfast_room
-basedir = /Data/Projects/exp/breakfast_room
+expname = tum_lige_0227
+basedir = /Data/Projects/exp/tum_lige_0227/
 datadir = /Data/Dataset/neural_rgbd_data/breakfast_room
-dataset_type = scannet
+dataset_type = tum
 trainskip = 1
 
 N_iters = 10000

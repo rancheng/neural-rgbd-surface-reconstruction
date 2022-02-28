@@ -17,7 +17,14 @@ def load_dataset(args):
     # elif args.dataset_type == "":
 
     else:
-        print('Unknown dataset type', args.dataset_type, 'exiting')
+        print('Loading tum_dataset...')
+        images, depth_images, poses, hwf, frame_indices = load_tum_data(basedir=args.datadir,
+                                                                            trainskip=args.trainskip,
+                                                                            downsample_factor=args.factor,
+                                                                            translation=args.translation,
+                                                                            sc_factor=args.sc_factor,
+                                                                            crop=args.crop)
+        print('Loaded tum_dataset', args.dataset_type, 'exiting')
         return
 
     return images, depth_images, poses, hwf, frame_indices
