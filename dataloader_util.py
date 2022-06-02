@@ -6,6 +6,7 @@ import transformations as tfs
 def load_poses_tum(posefile):
     pose_items = np.genfromtxt(posefile)
     pose_list = []
+    valid = []
     for i, pose in enumerate(pose_items):
         # np.roll(pose[3:], -1) uncomment this if the quaternion is saved as [w, x, y, z]
         timestamps = pose[0]
@@ -17,7 +18,8 @@ def load_poses_tum(posefile):
         tf_matrix[1, 3] = position[1]
         tf_matrix[2, 3] = position[2]
         pose_list.append(tf_matrix)
-    return pose_list
+        valid.append(True)
+    return pose_list, valid
 
 
 def load_poses(posefile):

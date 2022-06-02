@@ -1,6 +1,7 @@
 import os
 import imageio
 from dataloader_util import *
+from tqdm import tqdm
 
 
 def get_training_poses(basedir, translation=0.0, sc_factor=1.0, trainskip=1):
@@ -41,6 +42,60 @@ def load_tum_data(basedir, trainskip, downsample_factor=1, translation=0.0, sc_f
     img_files = [f for f in sorted(os.listdir(os.path.join(basedir, 'rgb')), key=alphanum_key) if f.endswith('png')]
     depth_files = [f for f in sorted(os.listdir(os.path.join(basedir, 'depth')), key=alphanum_key) if f.endswith('png')]
     all_poses, valid_poses = load_poses_tum(os.path.join(basedir, 'kf_pose_result_tum_interp.txt'))
+    num_frames = len(img_files)
+    train_frame_ids = list(range(0, num_frames, trainskip))
+
+    # Lists for the data to load into
+    images = []
+    depth_maps = []
+    poses = []
+    frame_indices = []
+
+    # Read images and depth maps for which valid poses exist
+    for i in tqdm(train_frame_ids):
+        if valid_poses[i]:
+            img = imageio.imread(os.path.join(basedir, 'rgb', img_files[i]))
+            depth = imageio.imread(os.path.join(basedir, 'depth', depth_files[i]))
+
+            images.append(img)
+            depth_maps.append(depth)
+            poses.append(all_poses[i])
+            frame_indices.append(i)
+
+    # Map images to [0, 1] range
+    images = (np.array(images) / 255.).astype(np.float32)
+
+    # Convert depth to meters, then to "network units"
+    depth_shift = 1000.0
+    depth_maps = (np.array(depth_maps) / depth_shift).astype(np.float32)
+    depth_maps *= sc_factor
+    depth_maps = depth_maps[..., np.newaxis]
+
+    poses = np.array(poses).astype(np.float32)
+    poses[:, :3, 3] += translation
+    poses[:, :3, 3] *= sc_factor
+
+    # Intrinsics
+    H, W = depth_maps[0].shape[:2]
+    focal = load_focal_length(os.path.join(basedir, 'focal.txt'))
+
+    # Resize color frames to match depth
+    images = resize_images(images, H, W)
+
+    # Crop the undistortion artifacts
+    if crop > 0:
+        images = images[:, crop:-crop, crop:-crop, :]
+        depth_maps = depth_maps[:, crop:-crop, crop:-crop, :]
+        H, W = depth_maps[0].shape[:2]
+
+    if downsample_factor > 1:
+        H = H//downsample_factor
+        W = W//downsample_factor
+        focal = focal/downsample_factor
+        images = resize_images(images, H, W)
+        depth_maps = resize_images(depth_maps, H, W, interpolation=cv2.INTER_NEAREST)
+
+    return images, depth_maps, poses, [H, W, focal], frame_indices
 
 
 def load_scannet_data(basedir, trainskip, downsample_factor=1, translation=0.0, sc_factor=1., crop=0):

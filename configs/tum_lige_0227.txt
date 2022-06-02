@@ -1,6 +1,6 @@
 expname = tum_lige_0227
-basedir = /Data/Projects/exp/tum_lige_0227/
-datadir = /Data/Dataset/neural_rgbd_data/breakfast_room
+basedir = /Data/Projects/exp/tum_lige_0227
+datadir = /Data/Dataset/Depth/20220227150520_tum
 dataset_type = tum
 trainskip = 1
 
